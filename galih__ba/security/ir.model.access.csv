@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_galih__ba_galih__ba,galih__ba.galih__ba,model_galih__ba_galih__ba,base.group_user,1,1,1,1
