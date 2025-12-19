@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Galih_BA",
+    'name': "Brand Ambassador Impact Analysis",
 
     'summary': "Short (1 phrase/line) summary of the module's purpose",
 
@@ -8,7 +8,7 @@
 Long description of module's purpose
     """,
 
-    'author': "My Company",
+    'author': "Galih Febriani Santika",
     'website': "https://www.yourcompany.com",
 
     # Categories can be used to filter modules in modules listing
