@@ -1,17 +1,16 @@
 import pandas as pd
 import numpy as np
-import os # Impor modul os
+import os
 from scipy.stats import pearsonr
 import pingouin as pg
 import matplotlib.pyplot as plt
 import seaborn as sns
 import semopy
 
-# 1. Tentukan path file data Anda
-# Tentukan direktori file skrip ini berada (c:\...\galih__ba\models\)
+# 1. Tentukan path file data
 current_dir = os.path.dirname(os.path.abspath(__file__)) 
 
-# ASUMSI: File ada di .../galih__ba/data/Pembelian_Susu.xlsx
+# ASUMSI: File ada di .../Brand-Ambassador-Impact-Analysis/data/Pembelian_Susu.xlsx
 file_path = os.path.join(current_dir, '..', 'data', 'Pembelian_Susu.xlsx')
 
 
@@ -19,7 +18,7 @@ print(f"Mencoba memuat file dari path: {file_path}")
 print("--- Tahap 1: Pengumpulan Data dan Pembersihan (Python) ---")
 
 try:
-    # Memuat data ke dalam Pandas DataFrame
+   
     data = pd.read_excel(file_path) # Gunakan read_excel untuk file .xlsx
     
     print("Data berhasil dimuat.")
@@ -29,8 +28,7 @@ try:
     print("\nInformasi Struktur Data:")
     data.info()
     
-    # --- PENTING: Pindahkan semua logika analisis di sini ---
-    
+
     # Menyiapkan list nama kolom indikator berdasarkan proposal Anda
     # Brand Ambassador (X)
     ba_cols = [col for col in data.columns if col.startswith('BA')]
@@ -43,9 +41,7 @@ try:
 
     print(f"\nKolom BA ditemukan: {ba_cols}")
     print(f"Kolom PD ditemukan: {pd_cols}")
-    
-    # ... Lanjutkan dengan proses analisis atau statistik Anda di sini ...
-    
+     
 except FileNotFoundError:
     print(f"\nFATAL ERROR: File tidak ditemukan di path: {file_path}")
     print("Pastikan file 'Pembelian_Susu.xlsx' berada di folder 'data' di root modul galih__ba.")
@@ -62,18 +58,12 @@ print(data.isnull().sum())
 # 2. Penanganan Missing Values (Strategi):
 # a. Jika jumlah missing values sangat kecil (misalnya < 5% dari total N=100),
 #    dan missing values hanya terjadi pada baris (responden) tertentu,
-#    strategi yang paling umum untuk data kuesioner adalah menghapus baris tersebut.
+#    paling umum untuk data kuesioner adalah menghapus baris tersebut.
 #    Ini karena data kuesioner adalah data primer yang sifatnya diskrit (Skala Likert).
 
 # Menghapus baris yang memiliki nilai hilang pada semua kolom indikator
-# Ganti baris pembersihan Anda menjadi:
+# Ganti baris pembersihan menjadi:
 data_clean = data.dropna(subset=all_indicators).copy() # <--- Tambahkan .copy() di sini!
-# Ini memastikan data_clean adalah DataFrame baru yang independen.
-# ...
-# Sekarang, baris 73, 89, dan 92 tidak akan menimbulkan peringatan lagi:
-# data_clean[all_indicators] = data_clean[all_indicators].astype(int)
-# data_clean['Skor_BA'] = data_clean[ba_cols].mean(axis=1)
-# data_clean['Skor_PD'] = data_clean[pd_cols].mean(axis=1)
 
 N_initial = len(data)
 N_final = len(data_clean)
@@ -83,7 +73,7 @@ print(f"Jumlah Responden Setelah Pembersihan: {N_final}")
 print(f"Responden yang Dihapus: {N_initial - N_final}")
 
 # 3. Konversi Tipe Data
-# Pastikan semua kolom indikator bertipe numerik (int/float)
+# Memastikan semua kolom indikator bertipe numerik (int/float)
 data_clean[all_indicators] = data_clean[all_indicators].astype(int)
 
 # 4. Validasi Jangkauan Jawaban (Outliers/Inconsistent Data)
@@ -121,7 +111,6 @@ print(data_clean[['Skor_BA', 'Skor_PD']].describe().transpose())
 data_clean.rename(columns={'Apakah anda merupakan penggemar Stray Kids?': 'D4'}, inplace=True)
 
 print("\nDistribusi Kelompok Penggemar (D4):")
-# Sekarang kolom 'D4' sudah tersedia di data_clean
 print(data_clean['D4'].value_counts())
 
 # 3. Membuat kolom biner 'Is_Fan'
@@ -137,8 +126,6 @@ print(data_clean.columns.tolist())
 
 
 print("--- Tahap 2: Uji Kualitas Data & EDA (Python) ---")
-
-#---Tahap 2: Uji Kualitas Data & EDA (Python)---
 
 def uji_validitas(df, cols, total_col_name):
     print(f"\n--- Uji Validitas: {total_col_name} ---")
@@ -194,14 +181,13 @@ plt.ylabel('Skor Keputusan Pembelian (Y)')
 plt.show()
 
 
+print("--- Tahap 3: Pemodelan SEM (Python) ---")
 
-# --- Tahap 3: Pemodelan SEM (Python) ---
-
-# 1. Bersihkan nama kolom di DataFrame (Hapus spasi dan titik)
-# Ini mengubah 'BA 1.1' menjadi 'BA11' atau 'BA1.1' menjadi 'BA11'
+# 1. Membersihkan nama kolom di DataFrame (Hapus spasi dan titik)
+# Hal ini mengubah 'BA 1.1' menjadi 'BA11' atau 'BA1.1' menjadi 'BA11'
 data_clean.columns = [col.replace(' ', '').replace('.', '') for col in data_clean.columns]
 
-# 2. Definisikan Model (Pastikan nama variabel di sini SAMA PERSIS dengan kolom DataFrame yang sudah bersih)
+# 2. Mendefinisikan Model (Memastikan nama variabel di sini SAMA PERSIS dengan kolom DataFrame yang sudah bersih)
 # Jika 'BA 1.1' sudah diubah jadi 'BA11', maka di sini harus 'BA11'
 desc = """
   # Measurement Model
@@ -215,7 +201,7 @@ desc = """
 # 3. Inisialisasi dan Fit Model
 model = semopy.Model(desc)
 
-# Pastikan fit menggunakan data yang sudah diganti namanya
+# Memastikan fit menggunakan data yang sudah diganti namanya
 model.fit(data_clean)
 stats = semopy.calc_stats(model)
 print("\n--- Fit Indices ---")
@@ -233,13 +219,13 @@ print(loadings[['lval', 'rval', 'Estimate', 'p-value']])
 
 # Filter untuk melihat Path Coefficient (hubungan antar variabel laten)
 path_coeffs = estimates[estimates['op'] == '~']
-# Cari baris dimana KeputusanPembelian diprediksi oleh BrandAmbassador
+# Mencari baris dimana KeputusanPembelian diprediksi oleh BrandAmbassador
 result_h0 = path_coeffs[(path_coeffs['lval'] == 'PD') & (path_coeffs['rval'] == 'BA')]
 
 print("\n--- Hasil Uji Hipotesis H0 ---")
 print(result_h0)
 
-# Use .get() or next/iter to safely handle empty data in one line
+# Interpretasi Hasil Uji Hipotesis
 p_val = result_h0['p-value'].values[0] if not result_h0.empty else None
 
 if p_val is None:
